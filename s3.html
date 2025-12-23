@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO LIVE TV | منصة البث الاحترافية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
+    <style>
+        :root {
+            --primary: #5e2a85;       /* لون بنفسجي beIN */
+            --primary-dark: #240b36;
+            --accent: #ff0055;        /* لون أحمر للبث المباشر */
+            --bg-body: #0f0f0f;       /* خلفية داكنة جداً */
+            --bg-card: #1a1a1a;       /* لون الكروت */
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Tajawal', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar & Layout --- */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            right: 0;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -1px;
+        }
+        .logo span { color: var(--primary); }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-link:hover {
+            background: rgba(94, 42, 133, 0.2);
+            color: #fff;
+        }
+
+        /* التنسيق عند التفعيل */
+        .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(94, 42, 133, 0.4);
+        }
+
+        .nav-link i { width: 20px; text-align: center; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-right: 260px; /* نفس عرض السايد بار */
+            padding: 20px 40px;
+            transition: var(--transition);
+        }
+
+        /* --- Video Section --- */
+        .video-wrapper {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        /* تخصيص ألوان مشغل Plyr */
+        .plyr--video {
+            --plyr-color-main: var(--primary);
+        }
+
+        .current-channel-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .channel-meta h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        .live-badge { 
+            background: var(--accent); 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- Filter & Grid --- */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 350px;
+            transition: var(--transition);
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(94, 42, 133, 0.2);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: #252525;
+            border-color: var(--primary);
+        }
+
+        .card img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .card h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* أيقونة المفضلة */
+        .fav-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: var(--text-muted);
+            transition: var(--transition);
+            z-index: 2;
+            padding: 5px;
+        }
+        
+        .fav-icon:hover, .fav-icon.active {
+            color: #ffca28;
+            transform: scale(1.2);
+        }
+
+        /* --- Mobile Responsive --- */
+        .mobile-toggle { display: none; font-size: 24px; cursor: pointer; padding: 10px; }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(100%); /* إخفاء القائمة افتراضياً */
+                width: 280px;
+                box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            }
+            .sidebar.active { transform: translateX(0); } /* إظهار القائمة */
+            .main-content { margin-right: 0; padding: 15px; }
+            .mobile-toggle { display: block; }
+            .search-box { width: 100%; }
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fas fa-play-circle" style="color:var(--primary)"></i> 
+                &nbsp; PRO<span>TV</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="loadCategory('Sports', this)">
+                        <i class="fas fa-futbol"></i> الرياضة
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('News', this)">
+                        <i class="fas fa-newspaper"></i> الأخبار
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Movies', this)">
+                        <i class="fas fa-film"></i> أفلام
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Kids', this)">
+                        <i class="fas fa-child"></i> أطفال
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Documentary', this)">
+                        <i class="fas fa-globe"></i> وثائقي
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <a class="nav-link" onclick="showFavorites(this)">
+                        <i class="fas fa-star" style="color: #ffca28;"></i> المفضلة
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="openUploadModal()">
+                        <i class="fas fa-upload"></i> رفع ملف M3U
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="toolbar" style="margin-bottom: 20px;">
+                <div class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+
+            <div class="video-wrapper">
+                <video id="player" playsinline controls data-poster="https://wallpaperaccess.com/full/1565744.jpg">
+                    <source src="" type="application/x-mpegURL" />
+                </video>
+            </div>
+
+            <div class="current-channel-info">
+                <div class="channel-meta">
+                    <h1 id="channelTitle">اختر قناة للمشاهدة</h1>
+                    <span class="live-badge">LIVE <i class="fas fa-circle" style="font-size: 8px; margin-right: 5px;"></i></span>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <h3 id="sectionTitle">القنوات الرياضية</h3>
+                <div class="search-box">
+                    <i class="fas fa-search" style="color: var(--text-muted)"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
+                </div>
+            </div>
+
+            <div class="channel-grid" id="grid">
+                </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+    <script>
+        // --- إعدادات الروابط ---
+        const API_BASE = "https://iptv-org.github.io/iptv/categories/";
+        const CATEGORIES_MAP = {
+            'Sports': 'sports.m3u',
+            'News': 'news.m3u',
+            'Movies': 'movies.m3u',
+            'Kids': 'kids.m3u',
+            'Documentary': 'documentary.m3u'
+        };
+
+        // --- المتغيرات العامة ---
+        let allChannels = [];
+        let favorites = []; // المفضلة (مؤقتة في الذاكرة فقط)
+        let player;
+        let hls;
+
+        // --- عند بدء التشغيل ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initPlayer();
+            // تحميل الرياضة افتراضياً دون تمرير زر لأننا وضعنا active يدوياً في HTML
+            loadCategory('Sports');
+            
+            // مستمع البحث
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                renderChannels(allChannels.filter(c => c.name.toLowerCase().includes(e.target.value.toLowerCase())));
+            });
+
+            // إخفاء شاشة التحميل
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }, 1000);
+        });
+
+        // --- إعداد مشغل الفيديو ---
+        function initPlayer() {
+            const video = document.getElementById('player');
+
+            // إعداد HLS
+            if (Hls.isSupported()) {
+                hls = new Hls();
+                hls.attachMedia(video);
+            }
+
+            // إعداد واجهة Plyr
+            player = new Plyr(video, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['quality', 'speed'],
+                i18n: { restart: 'إعادة', play: 'تشغيل', pause: 'إيقاف', quality: 'الجودة' }
+            });
+        }
+
+        // --- تشغيل القناة ---
+        function playChannel(url, name) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('channelTitle').innerText = name;
+
+            if (Hls.isSupported()) {
+                hls.loadSource(url);
+                player.source = {
+                    type: 'video',
+                    title: name,
+                    sources: [{ src: url, type: 'application/x-mpegURL' }]
+                };
+            } else if (document.getElementById('player').canPlayType('application/vnd.apple.mpegurl')) {
+                document.getElementById('player').src = url;
+            }
+            
+            player.play();
+        }
+
+        // --- تحميل التصنيفات ---
+        async function loadCategory(catName, btnElement = null) {
+            // تحديث واجهة الأزرار
+            updateActiveLink(btnElement);
+            
+            // إغلاق القائمة في الموبايل عند الاختيار
+            if(window.innerWidth <= 900) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+
+            document.getElementById('sectionTitle').innerText = (catName === 'Sports' ? 'الرياضة' : catName);
+            document.getElementById('grid').innerHTML = '<div style="color:#aaa; grid-column:1/-1; text-align:center; padding: 30px;">جاري تحميل القنوات <i class="fas fa-spinner fa-spin"></i></div>';
+
+            try {
+                const response = await fetch(API_BASE + CATEGORIES_MAP[catName]);
+                if (!response.ok) throw new Error('فشل التحميل');
+                const data = await response.text();
+                allChannels = parseM3U(data);
+                renderChannels(allChannels);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب القنوات، يرجى المحاولة لاحقاً</div>';
+            }
+        }
+
+        // --- تحليل ملف M3U ---
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            const result = [];
+            let item = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const imgMatch = line.match(/tvg-logo="([^"]*)"/);
+                    const nameParts = line.split(',');
+                    const name = nameParts[nameParts.length - 1];
+                    item = {
+                        name: name,
+                        logo: imgMatch ? imgMatch[1] : 'https://via.placeholder.com/100?text=TV'
+                    };
+                } else if (line.startsWith('http')) {
+                    item.url = line;
+                    result.push(item);
+                    item = {};
+                }
+            });
+            return result;
+        }
+
+        // --- عرض القنوات ---
+        function renderChannels(channels) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            // عرض أول 100 قناة فقط لتحسين الأداء
+            const displayList = channels.slice(0, 100); 
+
+            displayList.forEach(ch => {
+                const isFav = favorites.some(f => f.url === ch.url);
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                    <i class="fas fa-star fav-icon ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${ch.url}', '${ch.name.replace(/'/g, "\\'")}', '${ch.logo}')"></i>
+                    <img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/80?text=TV'" loading="lazy">
+                    <h4>${ch.name}</h4>
+                `;
+                el.onclick = (e) => {
+                    if (!e.target.classList.contains('fav-icon')) playChannel(ch.url, ch.name);
+                };
+                grid.appendChild(el);
+            });
+        }
+
+        // --- إدارة المفضلة (مؤقتة) ---
+        function toggleFavorite(e, url, name, logo) {
+            e.stopPropagation();
+            const index = favorites.findIndex(f => f.url === url);
+            
+            if (index === -1) {
+                // إضافة للمفضلة
+                favorites.push({ url, name, logo });
+                e.target.classList.add('active');
+            } else {
+                // حذف من المفضلة
+                favorites.splice(index, 1);
+                e.target.classList.remove('active');
+                
+                // إذا كنا في صفحة المفضلة، أعد رسم الشبكة لإخفاء المحذوف
+                if(document.getElementById('sectionTitle').innerText === 'المفضلة') {
+                    renderChannels(favorites);
+                    if(favorites.length === 0) {
+                        document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px;">لا توجد مفضلة</div>';
+                    }
+                }
+            }
+            // ملاحظة: تم إزالة localStorage حسب الطلب
+        }
+
+        function showFavorites(btnElement) {
+            updateActiveLink(btnElement);
+            if(window.innerWidth <= 900) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+
+            allChannels = favorites;
+            document.getElementById('sectionTitle').innerText = 'المفضلة';
+            
+            if (favorites.length === 0) {
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">قائمة المفضلة فارغة حالياً</div>';
+            } else {
+                renderChannels(favorites);
+            }
+        }
+
+        // --- دوال مساعدة للواجهة ---
+        function updateActiveLink(element) {
+            // إذا لم يتم تمرير عنصر (مثل التحميل الأولي)، نخرج من الدالة
+            if (!element) return;
+
+            // إزالة الكلاس active من جميع الروابط
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            // إضافته للعنصر المضغوط
+            element.classList.add('active');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+        
+        function openUploadModal() {
+            const url = prompt("أدخل رابط ملف M3U خارجي:");
+            if (url) {
+                 fetch(url).then(r => r.text()).then(d => {
+                     allChannels = parseM3U(d);
+                     document.getElementById('sectionTitle').innerText = 'قائمة مخصصة';
+                     renderChannels(allChannels);
+                     // إغلاق القائمة في الموبايل
+                     if(window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('active');
+                 }).catch(e => alert("الرابط غير صالح أو لا يعمل"));
+            }
+        }
+    </script>
+</body>
+</html>
