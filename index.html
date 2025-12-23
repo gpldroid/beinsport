@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LARACHE TV | منصة البث الاحترافية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
+    <style>
+        :root {
+            --primary: #5e2a85;
+            --primary-dark: #240b36;
+            --accent: #ff0055;
+            --bg-body: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+            --transition: all 0.3s ease;
+            --overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            outline: none; 
+        }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Tajawal', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar & Layout --- */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            right: 0;
+            top: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -1px;
+            flex: 1;
+        }
+        .logo span { color: var(--primary); }
+
+        /* زر إغلاق القائمة للأجهزة المحمولة */
+        .sidebar-close {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-link:hover {
+            background: rgba(94, 42, 133, 0.2);
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(94, 42, 133, 0.4);
+        }
+
+        .nav-link i { 
+            width: 20px; 
+            text-align: center; 
+        }
+
+        /* طبقة التعتيم عند فتح القائمة على الموبايل */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            z-index: 99;
+            backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-right: 260px;
+            padding: 20px 40px;
+            transition: var(--transition);
+        }
+
+        /* Header في المحتوى الرئيسي */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* زر فتح القائمة على الموبايل */
+        .mobile-menu-toggle {
+            display: none;
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 22px;
+            box-shadow: 0 5px 15px rgba(94, 42, 133, 0.4);
+            transition: var(--transition);
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 98;
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(94, 42, 133, 0.6);
+        }
+
+        .mobile-menu-toggle i {
+            transition: transform 0.3s ease;
+        }
+
+        /* --- Video Section --- */
+        .video-wrapper {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .plyr--video {
+            --plyr-color-main: var(--primary);
+        }
+
+        .current-channel-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .channel-meta h1 { 
+            font-size: 1.5rem; 
+            margin-bottom: 5px; 
+        }
+        
+        .live-badge { 
+            background: var(--accent); 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- Filter & Grid --- */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 350px;
+            transition: var(--transition);
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(94, 42, 133, 0.2);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: #252525;
+            border-color: var(--primary);
+        }
+
+        .card img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .card h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* أيقونة المفضلة */
+        .fav-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: var(--text-muted);
+            transition: var(--transition);
+            z-index: 2;
+            padding: 5px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fav-icon:hover, .fav-icon.active {
+            color: #ffca28;
+            transform: scale(1.2);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(100%);
+                width: 300px;
+                box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .sidebar-close {
+                display: flex;
+            }
+            
+            .main-content {
+                margin-right: 0;
+                padding: 15px;
+                width: 100%;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .search-box {
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .channel-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .channel-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 12px;
+            }
+            
+            .card img {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .mobile-menu-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+                bottom: 20px;
+                left: 20px;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.7; } 
+            100% { opacity: 1; } 
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 50px; 
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        .slide-in { animation: slideIn 0.3s ease; }
+    </style>
+</head>
+<body>
+
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+        <p style="color: var(--text-muted);">جاري تحميل التطبيق...</p>
+    </div>
+
+    <!-- طبقة التعتيم للقائمة على الموبايل -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <div class="app-container">
+        <!-- القائمة الجانبية -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-play-circle" style="color:var(--primary)"></i> 
+                    LARACHE<span>TV</span>
+                </div>
+                <button class="sidebar-close" onclick="closeSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="loadCategory('Sports', this)">
+                        <i class="fas fa-futbol"></i> 
+                        <span>الرياضة</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('News', this)">
+                        <i class="fas fa-newspaper"></i> 
+                        <span>الأخبار</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Movies', this)">
+                        <i class="fas fa-film"></i> 
+                        <span>أفلام</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Kids', this)">
+                        <i class="fas fa-child"></i> 
+                        <span>أطفال</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="loadCategory('Documentary', this)">
+                        <i class="fas fa-globe"></i> 
+                        <span>وثائقي</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <a class="nav-link" onclick="showFavorites(this)">
+                        <i class="fas fa-star" style="color: #ffca28;"></i> 
+                        <span>المفضلة</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="openUploadModal()">
+                        <i class="fas fa-upload"></i> 
+                        <span>رفع ملف M3U</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showAbout()">
+                        <i class="fas fa-info-circle"></i> 
+                        <span>عن التطبيق</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-muted); font-size: 12px; text-align: center;">
+                    LARACHE TV &copy; 2023<br>
+                    جميع الحقوق محفوظة عماد الدين لمراني
+                </p>
+            </div>
+        </aside>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content">
+            <div class="main-header">
+                <h1 style="font-size: 1.8rem; font-weight: 700;">LARACHE TV</h1>
+                <div class="search-box">
+                    <i class="fas fa-search" style="color: var(--text-muted)"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
+                </div>
+            </div>
+
+            <div class="video-wrapper">
+                <video id="player" playsinline controls data-poster="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80">
+                    <source src="" type="application/x-mpegURL" />
+                </video>
+            </div>
+
+            <div class="current-channel-info">
+                <div class="channel-meta">
+                    <h1 id="channelTitle">اختر قناة للمشاهدة</h1>
+                    <span class="live-badge">
+                        <i class="fas fa-circle" style="font-size: 8px; margin-left: 5px;"></i>
+                        LIVE
+                    </span>
+                </div>
+                <button class="fav-icon" id="currentChannelFavorite" style="position: static; display: none;" onclick="toggleCurrentFavorite()">
+                    <i class="far fa-star"></i>
+                </button>
+            </div>
+
+            <div class="toolbar">
+                <h2 id="sectionTitle">القنوات الرياضية</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterChannels('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterChannels('hd')">HD</button>
+                    <button class="filter-btn" onclick="filterChannels('live')">مباشر</button>
+                </div>
+            </div>
+
+            <div class="channel-grid" id="grid">
+                <!-- القنوات ستظهر هنا -->
+            </div>
+            
+            <!-- زر فتح القائمة على الموبايل -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </main>
+    </div>
+
+    <!-- Modal لرفع ملف M3U -->
+    <div id="uploadModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-upload"></i> رفع ملف M3U مخصص</h3>
+                <button class="modal-close" onclick="closeModal('uploadModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="url" id="m3uUrl" placeholder="https://example.com/playlist.m3u" 
+                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); color: white; margin-bottom: 15px;">
+                <p style="color: var(--text-muted); font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> يرجى إدخال رابط ملف M3U صالح
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('uploadModal')" style="padding: 10px 20px; background: transparent; color: white; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                    إلغاء
+                </button>
+                <button onclick="loadCustomPlaylist()" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    تحميل
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+    <script>
+        // --- إعدادات الروابط ---
+        const API_BASE = "https://iptv-org.github.io/iptv/categories/";
+        const CATEGORIES_MAP = {
+            'Sports': 'sports.m3u',
+            'News': 'news.m3u',
+            'Movies': 'movies.m3u',
+            'Kids': 'kids.m3u',
+            'Documentary': 'documentary.m3u'
+        };
+
+        // --- المتغيرات العامة ---
+        let allChannels = [];
+        let favorites = JSON.parse(localStorage.getItem('prolivetv_favorites')) || [];
+        let currentPlayingChannel = null;
+        let player;
+        let hls;
+        let currentFilter = 'all';
+
+        // --- عند بدء التشغيل ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initPlayer();
+            loadCategory('Sports');
+            
+            // مستمع البحث
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = allChannels.filter(c => c.name.toLowerCase().includes(query));
+                renderChannels(filtered);
+            });
+
+            // إخفاء شاشة التحميل
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }, 1500);
+            
+            // مستمع للنقر خارج القائمة لإغلاقها
+            document.addEventListener('click', (e) => {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const mobileToggle = document.getElementById('mobileMenuToggle');
+                
+                // إذا كان النقر خارج القائمة وكانت مفتوحة على الموبايل
+                if (window.innerWidth <= 900 && 
+                    !sidebar.contains(e.target) && 
+                    !mobileToggle.contains(e.target) &&
+                    sidebar.classList.contains('active')) {
+                    closeSidebar();
+                }
+            });
+            
+            // تحديث زر المفضلة للحالة الحالية
+            updateCurrentFavoriteButton();
+        });
+
+        // --- إعداد مشغل الفيديو ---
+        function initPlayer() {
+            const video = document.getElementById('player');
+
+            // إعداد HLS
+            if (Hls.isSupported()) {
+                hls = new Hls();
+                hls.attachMedia(video);
+                
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                alert('خطأ في الشبكة. يرجى التحقق من اتصال الإنترنت.');
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                        }
+                    }
+                });
+            }
+
+            // إعداد واجهة Plyr
+            player = new Plyr(video, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['quality', 'speed'],
+                i18n: { 
+                    restart: 'إعادة', 
+                    play: 'تشغيل', 
+                    pause: 'إيقاف', 
+                    quality: 'الجودة',
+                    speed: 'السرعة'
+                }
+            });
+            
+            // عند تشغيل الفيديو
+            player.on('play', () => {
+                if (currentPlayingChannel) {
+                    document.getElementById('channelTitle').innerText = currentPlayingChannel.name;
+                }
+            });
+        }
+
+        // --- تشغيل القناة ---
+        function playChannel(url, name, logo, channelId) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // حفظ القناة الحالية
+            currentPlayingChannel = {
+                url,
+                name,
+                logo,
+                id: channelId
+            };
+            
+            document.getElementById('channelTitle').innerText = name;
+            
+            // إظهار زر المفضلة للقناة الحالية
+            const favBtn = document.getElementById('currentChannelFavorite');
+            favBtn.style.display = 'flex';
+            
+            // تحديث حالة زر المفضلة
+            const isFavorite = favorites.some(f => f.id === channelId);
+            favBtn.innerHTML = `<i class="${isFavorite ? 'fas' : 'far'} fa-star"></i>`;
+            favBtn.classList.toggle('active', isFavorite);
+            
+            // تشغيل الفيديو
+            if (Hls.isSupported()) {
+                hls.loadSource(url);
+                hls.attachMedia(document.getElementById('player'));
+            } else if (document.getElementById('player').canPlayType('application/vnd.apple.mpegurl')) {
+                document.getElementById('player').src = url;
+            }
+            
+            player.play();
+            
+            // إغلاق القائمة على الموبايل
+            if (window.innerWidth <= 900) {
+                closeSidebar();
+            }
+        }
+
+        // --- تحميل التصنيفات ---
+        async function loadCategory(catName, btnElement = null) {
+            // تحديث واجهة الأزرار
+            if (btnElement) {
+                updateActiveLink(btnElement);
+            }
+            
+            document.getElementById('sectionTitle').innerText = getCategoryTitle(catName);
+            document.getElementById('grid').innerHTML = '<div style="color:#aaa; grid-column:1/-1; text-align:center; padding: 30px;">جاري تحميل القنوات <i class="fas fa-spinner fa-spin"></i></div>';
+
+            try {
+                const response = await fetch(API_BASE + CATEGORIES_MAP[catName]);
+                if (!response.ok) throw new Error('فشل التحميل');
+                const data = await response.text();
+                allChannels = parseM3U(data);
+                
+                // إضافة ID لكل قناة
+                allChannels = allChannels.map((ch, index) => ({
+                    ...ch,
+                    id: `channel_${catName}_${index}`
+                }));
+                
+                renderChannels(allChannels);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#e74c3c;">حدث خطأ في جلب القنوات، يرجى المحاولة لاحقاً</div>';
+            }
+        }
+
+        // --- تحليل ملف M3U ---
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            const result = [];
+            let item = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const imgMatch = line.match(/tvg-logo="([^"]*)"/);
+                    const nameParts = line.split(',');
+                    const name = nameParts[nameParts.length - 1];
+                    item = {
+                        name: name,
+                        logo: imgMatch ? imgMatch[1] : 'https://cdn-icons-png.flaticon.com/512/2718/2718224.png',
+                        isHD: line.toLowerCase().includes('hd'),
+                        isLive: line.toLowerCase().includes('live')
+                    };
+                } else if (line.startsWith('http')) {
+                    item.url = line;
+                    result.push({...item});
+                    item = {};
+                }
+            });
+            return result;
+        }
+
+        // --- عرض القنوات ---
+        function renderChannels(channels) {
+            const grid = document.getElementById('grid');
+            
+            if (channels.length === 0) {
+                grid.innerHTML = '<div style="color:#aaa; grid-column:1/-1; text-align:center; padding: 50px;">لا توجد قنوات متاحة</div>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            
+            // تصفية حسب النوع إذا كان مفعل
+            let filteredChannels = channels;
+            if (currentFilter === 'hd') {
+                filteredChannels = channels.filter(ch => ch.isHD);
+            } else if (currentFilter === 'live') {
+                filteredChannels = channels.filter(ch => ch.isLive);
+            }
+            
+            // عرض أول 100 قناة فقط لتحسين الأداء
+            const displayList = filteredChannels.slice(0, 100); 
+
+            displayList.forEach(ch => {
+                const isFav = favorites.some(f => f.id === ch.id);
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                    <i class="fas fa-star fav-icon ${isFav ? 'active' : ''}" 
+                       onclick="toggleFavorite(event, '${ch.id}', '${ch.name.replace(/'/g, "\\'")}', '${ch.logo}', '${ch.url}')"></i>
+                    <img src="${ch.logo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2718/2718224.png'" loading="lazy">
+                    <h4>${ch.name}</h4>
+                    ${ch.isHD ? '<span style="position:absolute; bottom:5px; left:5px; background:#00ff00; color:#000; padding:2px 5px; border-radius:3px; font-size:10px;">HD</span>' : ''}
+                `;
+                el.onclick = (e) => {
+                    if (!e.target.classList.contains('fav-icon')) {
+                        playChannel(ch.url, ch.name, ch.logo, ch.id);
+                    }
+                };
+                grid.appendChild(el);
+            });
+        }
+
+        // --- إدارة المفضلة ---
+        function toggleFavorite(e, channelId, name, logo, url) {
+            e.stopPropagation();
+            const index = favorites.findIndex(f => f.id === channelId);
+            
+            if (index === -1) {
+                // إضافة للمفضلة
+                favorites.push({ id: channelId, name, logo, url });
+                e.target.classList.add('active');
+                showNotification('تمت الإضافة للمفضلة');
+            } else {
+                // حذف من المفضلة
+                favorites.splice(index, 1);
+                e.target.classList.remove('active');
+                showNotification('تمت الإزالة من المفضلة');
+                
+                // إذا كنا في صفحة المفضلة، أعد رسم الشبكة
+                if(document.getElementById('sectionTitle').innerText === 'المفضلة') {
+                    if(favorites.length === 0) {
+                        document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px;">لا توجد قنوات في المفضلة</div>';
+                    } else {
+                        renderChannels(favorites);
+                    }
+                }
+            }
+            
+            // حفظ في localStorage
+            localStorage.setItem('prolivetv_favorites', JSON.stringify(favorites));
+            
+            // تحديث زر المفضلة للقناة الحالية إذا كانت نفس القناة
+            updateCurrentFavoriteButton();
+        }
+
+        function toggleCurrentFavorite() {
+            if (!currentPlayingChannel) return;
+            
+            const index = favorites.findIndex(f => f.id === currentPlayingChannel.id);
+            const favBtn = document.getElementById('currentChannelFavorite');
+            
+            if (index === -1) {
+                // إضافة للمفضلة
+                favorites.push(currentPlayingChannel);
+                favBtn.innerHTML = '<i class="fas fa-star"></i>';
+                favBtn.classList.add('active');
+                showNotification('تمت الإضافة للمفضلة');
+            } else {
+                // حذف من المفضلة
+                favorites.splice(index, 1);
+                favBtn.innerHTML = '<i class="far fa-star"></i>';
+                favBtn.classList.remove('active');
+                showNotification('تمت الإزالة من المفضلة');
+            }
+            
+            // حفظ في localStorage
+            localStorage.setItem('prolivetv_favorites', JSON.stringify(favorites));
+            
+            // تحديث أيقونات المفضلة في القنوات المعروضة
+            document.querySelectorAll('.fav-icon').forEach(icon => {
+                const card = icon.closest('.card');
+                if (card) {
+                    // يمكن تحديث الحالة بناءً على ID لكن لتبسيط الكود سنكتفي بالتحديث العام
+                }
+            });
+        }
+
+        function updateCurrentFavoriteButton() {
+            if (!currentPlayingChannel) return;
+            
+            const isFavorite = favorites.some(f => f.id === currentPlayingChannel.id);
+            const favBtn = document.getElementById('currentChannelFavorite');
+            
+            if (favBtn) {
+                favBtn.innerHTML = `<i class="${isFavorite ? 'fas' : 'far'} fa-star"></i>`;
+                favBtn.classList.toggle('active', isFavorite);
+            }
+        }
+
+        function showFavorites(btnElement) {
+            updateActiveLink(btnElement);
+            
+            document.getElementById('sectionTitle').innerText = 'المفضلة';
+            document.getElementById('searchInput').value = '';
+            
+            if (favorites.length === 0) {
+                document.getElementById('grid').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">لا توجد قنوات في المفضلة</div>';
+            } else {
+                renderChannels(favorites);
+            }
+            
+            // إغلاق القائمة في الموبايل
+            if (window.innerWidth <= 900) {
+                closeSidebar();
+            }
+        }
+
+        // --- تصفية القنوات ---
+        function filterChannels(filter) {
+            currentFilter = filter;
+            
+            // تحديث أزرار التصفية
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // إعادة عرض القنوات مع التصفية
+            renderChannels(allChannels);
+        }
+
+        // --- دوال مساعدة للواجهة ---
+        function updateActiveLink(element) {
+            if (!element) return;
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('mobileMenuToggle');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // تغيير الأيقونة
+            if (sidebar.classList.contains('active')) {
+                toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('mobileMenuToggle');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        }
+
+        function openUploadModal() {
+            // إغلاق القائمة أولاً
+            if (window.innerWidth <= 900) {
+                closeSidebar();
+            }
+            
+            // عرض الـ modal
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function loadCustomPlaylist() {
+            const url = document.getElementById('m3uUrl').value.trim();
+            if (!url) {
+                alert("يرجى إدخال رابط صالح");
+                return;
+            }
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('الرابط غير صالح');
+                const data = await response.text();
+                
+                allChannels = parseM3U(data);
+                allChannels = allChannels.map((ch, index) => ({
+                    ...ch,
+                    id: `custom_${index}`
+                }));
+                
+                document.getElementById('sectionTitle').innerText = 'قائمة مخصصة';
+                renderChannels(allChannels);
+                closeModal('uploadModal');
+                showNotification('تم تحميل القائمة المخصصة بنجاح');
+            } catch (e) {
+                alert("الرابط غير صالح أو لا يعمل");
+                console.error(e);
+            }
+        }
+
+        function getCategoryTitle(catName) {
+            const titles = {
+                'Sports': 'القنوات الرياضية',
+                'News': 'قنوات الأخبار',
+                'Movies': 'قنوات الأفلام',
+                'Kids': 'قنوات الأطفال',
+                'Documentary': 'القنوات الوثائقية'
+            };
+            return titles[catName] || catName;
+        }
+
+        function showNotification(message) {
+            // إنشاء عنصر الإشعار
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: var(--primary);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: fadeIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // إزالة الإشعار بعد 3 ثوان
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function showAbout() {
+            alert('LARACHE TV\nمنصة بث مباشر احترافية\nالإصدار 1.0\nجميع الحقوق محفوظة © 2023');
+            if (window.innerWidth <= 900) {
+                closeSidebar();
+            }
+        }
+
+        // منع الإغلاق عند النقر داخل القائمة
+        document.getElementById('sidebar').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>
