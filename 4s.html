@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Kooralist - بث مباشر وجدول المباريات | جميع القنوات الرياضية</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS v3+ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HLS Player -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#E50914',
+                            50: '#FFFBFA',
+                            500: '#E50914',
+                            600: '#B20710',
+                            600: '#dc2626'
+                        },
+                        dark: {
+                            DEFAULT: '#0f0f0f',
+                            100: '#1a1a1a',
+                            200: '#2a2a2a'
+                        },
+                        light: {
+                            DEFAULT: '#f8f9fa',
+                            200: '#e9ecef',
+                            900: '#212529'
+                        },
+                        gray: {
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563'
+                        }
+                    },
+                    screens: {
+                        'xs': '405px',
+                        '3xl': '1920px',
+                        '4xl': '2560px',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 1s linear infinite',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0, 100%': { boxShadow: '0 0 20px 0 rgba(229, 9, 20, 0.15)' },
+                            '50%': { boxShadow: '0 0 40px 10px rgba(229, 9, 20, 0.3)' },
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(229, 9, 20, 0.15)',
+                        'glow-lg': '0 25px 50px -12px rgba(229, 9, 20, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-left: env(safe-area-inset-left, 0px);
+            --safe-area-right: env(safe-area-inset-right, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        /* Netflix-style Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E50914;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF2D2D;
+        }
+
+        /* Touch-friendly */
+        button, [role="button"], .channel-card, .match-card {
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+
+        img {
+            -webkit-user-drag: none;
+        }
+
+        /* Reduce motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* iOS form zoom fix */
+        input, select, textarea {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body class="bg-light text-gray-900 dark:bg-dark dark:text-white min-h-screen font-sans pt-[var(--safe-area-top)] pb-[var(--safe-area-bottom)] px-[var(--safe-area-left)] pr-[var(--safe-area-right)] antialiased">
+
+    <!-- Header: Semantic nav -->
+    <nav class="sticky top-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10" style="padding-top: var(--safe-area-top);">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="#iptv-section" class="flex items-center gap-3 group" aria-label="الصفحة الرئيسية">
+                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                        <i class="ph ph-soccer-ball text-white text-lg"></i>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold truncate max-w-[150px] xs:max-w-none">Kooralist</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 hidden xs:block">البث المباشر والرياضة</p>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-4">
+                    <button onclick="scrollToSection('iptv-section')" 
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 hover:scale-105 font-medium" 
+                            aria-label="البث المباشر">
+                        <i class="ph ph-play-circle text-primary"></i>
+                        <span>البث المباشر</span>
+                    </button>
+                    
+                    <button onclick="scrollToSection('matches-section')"
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 hover:scale-105 font-medium"
+                            aria-label="جدول المباريات">
+                        <i class="ph ph-calendar text-primary"></i>
+                        <span>المباريات</span>
+                    </button>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm hidden lg:inline">فاتح</span>
+                        <div class="relative">
+                            <input type="checkbox" id="themeToggle" class="sr-only peer" onchange="toggleTheme()">
+                            <label for="themeToggle" class="w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer flex items-center p-1 transition-all duration-300 peer-checked:bg-primary peer-checked:dark:bg-primary/80">
+                                <div class="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 translate-x-1 peer-checked:translate-x-6"></div>
+                            </label>
+                        </div>
+                        <span class="text-sm hidden lg:inline">مظلم</span>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 hover:scale-110" aria-label="قائمة التنقل" aria-expanded="false">
+                    <i class="ph ph-list text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed top-16 inset-x-0 bg-white dark:bg-dark border-t border-gray-200 dark:border-white/10 z-40 hidden max-h-[calc(100vh-64px)] overflow-y-auto shadow-2xl">
+        <div class="container mx-auto px-4 py-6 space-y-2">
+            <button onclick="scrollToSection('iptv-section'); toggleMobileMenu()"
+                    class="w-full flex items-center justify-center gap-3 py-4 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 font-medium hover:scale-[1.02]">
+                <i class="ph ph-play-circle text-lg text-primary"></i>
+                <span>البث المباشر</span>
+            </button>
+            <button onclick="scrollToSection('matches-section'); toggleMobileMenu()"
+                    class="w-full flex items-center justify-center gap-3 py-4 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 font-medium hover:scale-[1.02]">
+                <i class="ph ph-calendar text-lg text-primary"></i>
+                <span>المباريات</span>
+            </button>
+            <div class="flex items-center justify-center gap-4 py-6 pt-4 border-t border-gray-200/50 dark:border-white/10">
+                <span class="font-medium text-sm">المظهر</span>
+                <div class="relative">
+                    <input type="checkbox" id="themeToggleMobile" class="sr-only peer" onchange="toggleTheme()">
+                    <label for="themeToggleMobile" class="w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer flex items-center p-1 transition-all duration-300 peer-checked:bg-primary peer-checked:dark:bg-primary/80">
+                        <div class="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 translate-x-1 peer-checked:translate-x-6"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 pb-[max(1.5rem,var(--safe-area-bottom))]">
+        <!-- IPTV Section -->
+        <section id="iptv-section" class="mb-16" aria-labelledby="iptv-heading">
+            <div class="flex flex-col xs:flex-row xs:items-center justify-between gap-4 mb-8">
+                <h2 id="iptv-heading" class="text-3xl font-black flex items-center gap-3 flex-shrink-0">
+                    <i class="ph ph-television text-primary text-2xl"></i>
+                    <span class="truncate">البث المباشر - جميع القنوات</span>
+                </h2>
+                <span id="channelCount" class="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-dark-200 px-4 py-2 rounded-full self-start xs:self-center font-medium">0 قناة</span>
+            </div>
+
+            <!-- Player: Group for hover controls -->
+            <div class="group/video-wrapper mb-8">
+                <div class="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl mx-auto max-w-4xl">
+                    <video id="videoPlayer" class="w-full h-full object-contain" controls playsinline webkit-playsinline preload="none" poster="" aria-label="مشغل الفيديو"></video>
+                    <div id="playerPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-black/90 via-black/80 to-black text-center px-6 pointer-events-none">
+                        <i class="ph ph-television text-6xl text-gray-400 mb-6 animate-pulse"></i>
+                        <p class="text-xl text-gray-300 mb-3 font-medium">اختر قناة لبدء المشاهدة</p>
+                        <p class="text-base text-gray-400">آلاف القنوات متاحة للبث المباشر</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sources Tabs -->
+            <div class="mb-8">
+                <div class="flex flex-wrap gap-2 mb-6 -m-1">
+                    <button onclick="loadSource('sports')" 
+                            class="flex-1 min-w-[calc(50%-0.5rem)] xs:flex-none xs:min-w-0 px-6 py-3 xs:px-6 xs:py-3 rounded-xl bg-primary text-white font-semibold text-base shadow-lg hover:shadow-glow hover:scale-[1.02] transition-all duration-300 active:scale-95">
+                        ⚽ رياضية
+                    </button>
+                    <button onclick="loadSource('entertainment')"
+                            class="flex-1 min-w-[calc(50%-0.5rem)] xs:flex-none xs:min-w-0 px-6 py-3 xs:px-6 xs:py-3 rounded-xl bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 shadow-md hover:shadow-lg light-mode:hover:bg-gray-200 transition-all duration-300 hover:scale-[1.02] text-base font-medium">
+                        🎬 ترفيهية
+                    </button>
+                    <button onclick="loadSource('news')"
+                            class="flex-1 min-w-[calc(50%-0.5rem)] xs:flex-none xs:min-w-0 px-6 py-3 xs:px-6 xs:py-3 rounded-xl bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] text-base font-medium">
+                        📻 إخبارية
+                    </button>
+                    <button onclick="loadSource('kids')"
+                            class="flex-1 min-w-[calc(50%-0.5rem)] xs:flex-none xs:min-w-0 px-6 py-3 xs:px-6 xs:py-3 rounded-xl bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] text-base font-medium">
+                        🎮 أطفال
+                    </button>
+                    <button onclick="loadSource('all')"
+                            class="flex-1 min-w-[calc(50%-0.5rem)] xs:flex-none xs:min-w-0 px-6 py-3 xs:px-6 xs:py-3 rounded-xl bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] text-base font-medium">
+                        🌍 جميع القنوات
+                    </button>
+                </div>
+
+                <!-- Search and Filters: Container queries for modern responsive -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                    <div class="relative group">
+                        <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                        <input type="search" id="channelSearch" 
+                               placeholder="ابحث عن قناة..." aria-label="البحث عن قناة"
+                               class="w-full bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-white/20 rounded-xl py-4 pr-12 pl-5 focus:outline-none focus:ring-4 ring-primary/20 focus:border-primary/50 transition-all duration-300 text-base placeholder-gray-500 dark:placeholder-gray-400 shadow-sm">
+                    </div>
+                    
+                    <select id="countryFilter" aria-label="فلتر الدول" 
+                            class="bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-white/20 rounded-xl py-4 px-5 focus:outline-none focus:ring-4 ring-primary/20 focus:border-primary/50 transition-all duration-300 text-base shadow-sm">
+                        <option value="">جميع الدول</option>
+                    </select>
+                    
+                    <select id="categoryFilter" aria-label="فلتر التصنيفات"
+                            class="bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-white/20 rounded-xl py-4 px-5 focus:outline-none focus:ring-4 ring-primary/20 focus:border-primary/50 transition-all duration-300 text-base shadow-sm">
+                        <option value="">جميع التصنيفات</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Channels Grid: Modern CSS Grid with auto-fill & responsive minmax -->
+            <div id="channelsList" class="channels-grid grid gap-4 xs:gap-3 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+                <!-- Channels loaded dynamically -->
+            </div>
+
+            <!-- Load More -->
+            <div class="text-center mt-12">
+                <button id="loadMoreBtn" onclick="loadMoreChannels()"
+                        class="w-full max-w-md mx-auto px-8 py-4 bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-glow hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] whitespace-nowrap">
+                    عرض المزيد من القنوات
+                </button>
+            </div>
+        </section>
+
+        <!-- Matches Section -->
+        <section id="matches-section" aria-labelledby="matches-heading">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                <h2 id="matches-heading" class="text-3xl font-black flex items-center gap-3">
+                    <i class="ph ph-calendar text-primary text-2xl"></i>
+                    <span>جدول المباريات</span>
+                </h2>
+                
+                <div class="flex flex-col sm:flex-row gap-4 min-w-0">
+                    <!-- Date Navigation -->
+                    <div class="flex items-center bg-gray-100 dark:bg-dark-200 rounded-xl overflow-hidden shadow-sm self-start sm:self-auto">
+                        <button onclick="changeDate(-1)" 
+                                class="p-3 hover:bg-gray-200 dark:hover:bg-white/10 transition-all duration-300 hover:scale-110 active:scale-95 flex-shrink-0"
+                                aria-label="التاريخ السابق">
+                            <i class="ph ph-caret-right"></i>
+                        </button>
+                        <input type="date" id="datePicker" 
+                               class="bg-transparent px-6 py-3 text-center min-w-[160px] text-lg font-semibold focus:outline-none" aria-label="التاريخ">
+                        <button onclick="changeDate(1)" 
+                                class="p-3 hover:bg-gray-200 dark:hover:bg-white/10 transition-all duration-300 hover:scale-110 active:scale-95 flex-shrink-0"
+                                aria-label="التاريخ التالي">
+                            <i class="ph ph-caret-left"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="flex gap-3 min-w-0">
+                        <select id="leagueFilter" 
+                                class="flex-1 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-white/20 rounded-xl px-5 py-3 focus:outline-none focus:ring-4 ring-primary/20 focus:border-primary/50 transition-all duration-300 shadow-sm text-base min-w-[200px]"
+                                aria-label="فلتر البطولات">
+                            <option value="all">جميع البطولات</option>
+                        </select>
+                        
+                        <button id="liveMatchesBtn" onclick="toggleLiveMatches()"
+                                class="px-6 py-3 bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 font-semibold whitespace-nowrap">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                            مباشر فقط
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matches Grid -->
+            <div id="matchesContainer" class="matches-grid grid gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(360px,1fr))]">
+                <!-- Matches loaded dynamically -->
+            </div>
+
+            <!-- Load More Matches -->
+            <div class="text-center mt-12">
+                <button id="loadMoreMatchesBtn" onclick="loadMoreMatches()"
+                        class="w-full max-w-md mx-auto px-8 py-4 bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-white/10 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-glow hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] whitespace-nowrap">
+                    تحميل مباريات أكثر
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 dark:bg-dark-200 border-t border-gray-200 dark:border-white/10 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <h3 class="font-black text-xl mb-4 text-gray-900 dark:text-white">عن Kooralist</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-base">
+                        منصة رياضية شاملة توفر البث المباشر لألاف القنوات وجدول المباريات لجميع البطولات العالمية والعربية.
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="font-black text-xl mb-4 text-gray-900 dark:text-white">البطولات</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">الدوري الإنجليزي</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">دوري أبطال أوروبا</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">الدوري الإسباني</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">الدوري السعودي</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-black text-xl mb-4 text-gray-900 dark:text-white">القنوات</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">القنوات الرياضية</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">القنوات الإخبارية</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">القنوات الترفيهية</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base block">قنوات الأفلام</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-black text-xl mb-4 text-gray-900 dark:text-white">المصادر</h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener noreferrer"
+                               class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base flex items-center gap-2 group">
+                                <i class="ph ph-github-logo group-hover:-rotate-12 transition-transform"></i>
+                                IPTV GitHub
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.api-football.com" target="_blank" rel="noopener noreferrer"
+                               class="text-gray-600 dark:text-gray-300 hover:text-primary font-medium transition-all duration-300 hover:underline text-base flex items-center gap-2 group">
+                                <i class="ph ph-link group-hover:-rotate-12 transition-transform"></i>
+                                API Football
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-200/50 dark:border-white/10 text-center">
+                <p class="text-gray-500 dark:text-gray-400 text-base">
+                    © 2025 Kooralist. جميع الحقوق محفوظة. هذا موقع تجريبي.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration (unchanged)
+        const CONFIG = {
+            API_KEY: '219afb927d14c7f9ba7132adf83e0a4f',
+            API_HOST: 'v3.football.api-sports.io',
+            IPTV_SOURCES: {
+                sports: 'https://iptv-org.github.io/iptv/categories/sports.m3u',
+                entertainment: 'https://iptv-org.github.io/iptv/categories/entertainment.m3u',
+                news: 'https://iptv-org.github.io/iptv/categories/news.m3u',
+                kids: 'https://iptv-org.github.io/iptv/categories/kids.m3u',
+                all: 'https://iptv-org.github.io/iptv/index.m3u'
+            },
+            COUNTRIES: {
+                'sa': 'السعودية', 'ae': 'الإمارات', 'eg': 'مصر', 'ma': 'المغرب', 'dz': 'الجزائر',
+                'tn': 'تونس', 'jo': 'الأردن', 'lb': 'لبنان', 'kw': 'الكويت', 'qa': 'قطر',
+                'bh': 'البحرين', 'om': 'عمان', 'us': 'أمريكا', 'uk': 'بريطانيا', 'fr': 'فرنسا',
+                'es': 'إسبانيا', 'it': 'إيطاليا', 'de': 'ألمانيا'
+            }
+        };
+
+        // State (updated theme to standard 'dark' class)
+        const state = {
+            theme: localStorage.getItem('theme') || 'dark',
+            currentDate: new Date().toISOString().split('T')[0],
+            channels: [], filteredChannels: [], displayedChannels: 30, currentSource: 'sports',
+            currentChannel: null, hls: null, countries: new Set(), categories: new Set(),
+            matches: [], filteredMatches: [], displayedMatches: 8, showLiveOnly: false,
+            currentLeague: 'all', isMobile: window.innerWidth <= 768, isTouch: 'ontouchstart' in window
+        };
+
+        // DOM Elements (updated selectors)
+        const elements = {
+            themeToggle: document.getElementById('themeToggle'),
+            themeToggleMobile: document.getElementById('themeToggleMobile'),
+            mobileMenu: document.getElementById('mobileMenu'),
+            videoPlayer: document.getElementById('videoPlayer'),
+            playerPlaceholder: document.getElementById('playerPlaceholder'),
+            channelCount: document.getElementById('channelCount'),
+            channelsList: document.getElementById('channelsList'),
+            channelSearch: document.getElementById('channelSearch'),
+            countryFilter: document.getElementById('countryFilter'),
+            categoryFilter: document.getElementById('categoryFilter'),
+            loadMoreBtn: document.getElementById('loadMoreBtn'),
+            datePicker: document.getElementById('datePicker'),
+            matchesContainer: document.getElementById('matchesContainer'),
+            leagueFilter: document.getElementById('leagueFilter'),
+            liveMatchesBtn: document.getElementById('liveMatchesBtn'),
+            loadMoreMatchesBtn: document.getElementById('loadMoreMatchesBtn')
+        };
+
+        // Init (updated theme apply)
+        function init() {
+            applyTheme();
+            elements.datePicker.value = state.currentDate;
+            detectDeviceType();
+            loadChannels('sports');
+            loadMatches(state.currentDate);
+            setupEventListeners();
+            populateCountryFilter();
+            window.addEventListener('resize', handleResize);
+        }
+
+        // Theme: Standard Tailwind dark class on html
+        function applyTheme() {
+            if (state.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (elements.themeToggle) elements.themeToggle.checked = true;
+                if (elements.themeToggleMobile) elements.themeToggleMobile.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (elements.themeToggle) elements.themeToggle.checked = false;
+                if (elements.themeToggleMobile) elements.themeToggleMobile.checked = false;
+            }
+            localStorage.setItem('theme', state.theme);
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+        }
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            elements.mobileMenu.classList.toggle('hidden');
+            document.body.style.overflow = elements.mobileMenu.classList.contains('hidden') ? '' : 'hidden';
+        }
+
+        // Close menu on outside click
+        document.addEventListener('click', (e) => {
+            if (!elements.mobileMenu.classList.contains('hidden') && !e.target.closest('#mobileMenu') && !e.target.closest('button[onclick="toggleMobileMenu()"]')) {
+                toggleMobileMenu();
+            }
+        });
+
+        // Scroll smooth with offset
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                const headerHeight = 80; // Approx sticky header
+                window.scrollTo({ top: element.offsetTop - headerHeight, behavior: 'smooth' });
+                toggleMobileMenu(); // Close menu
+            }
+        }
+
+        // Detect device
+        function detectDeviceType() { state.isMobile = window.innerWidth <= 768; state.isTouch = 'ontouchstart' in window; }
+
+        function handleResize() { detectDeviceType(); }
+
+        // Event listeners (debounced search etc. unchanged)
+        function setupEventListeners() {
+            let searchTimeout;
+            elements.channelSearch.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(filterChannels, 300);
+            });
+            elements.countryFilter.addEventListener('change', filterChannels);
+            elements.categoryFilter.addEventListener('change', filterChannels);
+            elements.datePicker.addEventListener('change', (e) => { state.currentDate = e.target.value; loadMatches(state.currentDate); });
+            elements.leagueFilter.addEventListener('change', (e) => { state.currentLeague = e.target.value; filterMatches(); });
+        }
+
+        // Populate filters (unchanged)
+        function populateCountryFilter() {
+            Object.entries(CONFIG.COUNTRIES).forEach(([code, name]) => {
+                elements.countryFilter.innerHTML += `<option value="${code}">${name}</option>`;
+            });
+        }
+
+        // Load source/channels (unchanged logic, but UI uses Tailwind)
+        async function loadSource(source) {
+            state.currentSource = source; state.displayedChannels = 30;
+            elements.channelSearch.value = elements.countryFilter.value = elements.categoryFilter.value = '';
+            elements.channelsList.innerHTML = `
+                <div class="col-span-full text-center py-20">
+                    <div class="w-12 h-12 border-4 border-primary/20 dark:border-primary/20 rounded-full border-t-primary mx-auto mb-6 animate-spin-slow"></div>
+                    <p class="text-gray-500 dark:text-gray-400 text-lg">جاري تحميل القنوات...</p>
+                </div>
+            `;
+            await loadChannels(source);
+        }
+
+        async function loadChannels(source) {
+            try {
+                const response = await fetch(CONFIG.IPTV_SOURCES[source]);
+                parseM3U(await response.text());
+                filterChannels();
+            } catch (error) {
+                console.error('Error loading channels:', error);
+                elements.channelsList.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <i class="ph ph-warning-circle text-6xl text-red-400 mb-6"></i>
+                        <p class="text-red-400 text-xl font-semibold">فشل تحميل القنوات</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">تحقق من اتصال الإنترنت</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Parse M3U (unchanged)
+        function parseM3U(data) {
+            const lines = data.split('\n'), channels = [], countries = new Set(), categories = new Set();
+            let current = {};
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    current.name = (line.match(/tvg-name="([^"]*)"/)?.[1] || line.match(/,(.+)$/)?.[1] || 'قناة غير معروفة').trim();
+                    current.logo = line.match(/tvg-logo="([^"]*)"/)?.[1] || null;
+                    current.group = line.match(/group-title="([^"]*)"/)?.[1] || 'عام';
+                    current.country = line.match(/tvg-country="([^"]*)"/)?.[1] || 'غير محدد';
+                    if (current.group) categories.add(current.group);
+                    if (current.country && current.country !== 'غير محدد') countries.add(current.country);
+                } else if (line.startsWith('http') && current.name) {
+                    current.url = line; channels.push({ ...current }); current = {};
+                }
+            });
+            state.channels = channels; state.countries = countries; state.categories = categories;
+            updateCategoryFilter();
+            elements.channelCount.textContent = `${channels.length} قناة`;
+        }
+
+        function updateCategoryFilter() {
+            elements.categoryFilter.innerHTML = '<option value="">جميع التصنيفات</option>';
+            state.categories.forEach(cat => { elements.categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`; });
+        }
+
+        function filterChannels() {
+            const term = elements.channelSearch.value.toLowerCase(), country = elements.countryFilter.value, cat = elements.categoryFilter.value;
+            state.filteredChannels = state.channels.filter(c => 
+                (!term || c.name.toLowerCase().includes(term) || c.group?.toLowerCase().includes(term)) &&
+                (!country || c.country === country) &&
+                (!cat || c.group === cat)
+            );
+            renderChannels();
+        }
+
+        // Render channels with Tailwind classes
+        function renderChannels() {
+            const toShow = state.filteredChannels.slice(0, state.displayedChannels);
+            if (!toShow.length) {
+                elements.channelsList.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <i class="ph ph-television text-6xl text-gray-400 mb-6"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-xl font-semibold">لا توجد قنوات</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">جرب بحثاً مختلفاً</p>
+                    </div>
+                `;
+                elements.loadMoreBtn.style.display = 'none'; return;
+            }
+            elements.channelsList.innerHTML = toShow.map((channel, idx) => {
+                const isActive = state.currentChannel?.url === channel.url;
+                return `
+                    <article class="channel-card group/card bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 rounded-2xl p-4 shadow-md hover:shadow-glow hover:scale-[1.05] active:scale-[0.98] hover:bg-primary/5 dark:hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 overflow-hidden ${isActive ? 'ring-4 ring-primary/30 shadow-glow-lg !scale-[1.02]' : ''}"
+                             tabindex="0" role="button" onclick="playChannel(${idx})" aria-label="${channel.name}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-xl bg-gray-100 dark:bg-dark-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md">
+                                ${channel.logo ? `<img src="${channel.logo}" alt="${channel.name} logo" class="w-11 h-11 object-cover rounded-lg shadow-sm" loading="lazy" onerror="this.style.display='none';this.parentNode.innerHTML='<i class=\'ph ph-television text-gray-400 text-xl\'></i>'">` : `<i class="ph ph-television text-gray-400 text-xl"></i>`}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-base truncate mb-2 group-hover/card:text-primary transition-colors">${channel.name}</h4>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    ${channel.group ? `<span class="text-xs bg-gray-200 dark:bg-dark-100 text-gray-600 px-2.5 py-1 rounded-full truncate max-w-[100px]">${channel.group}</span>` : ''}
+                                    ${channel.country && channel.country !== 'غير محدد' ? `<span class="text-xs text-gray-500 dark:text-gray-400 truncate font-medium">${channel.country}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            elements.loadMoreBtn.style.display = state.displayedChannels < state.filteredChannels.length ? 'block' : 'none';
+        }
+
+        function loadMoreChannels() {
+            state.displayedChannels += 30; renderChannels();
+            if (state.isMobile) elements.loadMoreBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Play channel (HLS unchanged)
+        function playChannel(idx) {
+            const channel = state.filteredChannels[idx]; if (!channel) return;
+            state.currentChannel = channel;
+            elements.playerPlaceholder.style.display = 'none';
+            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('ring-4', 'ring-primary/30', 'shadow-glow-lg', '!scale-[1.02]'));
+            if (document.querySelectorAll('.channel-card')[idx]) document.querySelectorAll('.channel-card')[idx].classList.add('ring-4', 'ring-primary/30', 'shadow-glow-lg', '!scale-[1.02]');
+            if (Hls.isSupported()) {
+                if (state.hls) state.hls.destroy();
+                state.hls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 90, maxBufferSize: 30*1000*1000, maxBufferLength: 30 });
+                state.hls.loadSource(channel.url);
+                state.hls.attachMedia(elements.videoPlayer);
+                state.hls.on(Hls.Events.MANIFEST_PARSED, () => elements.videoPlayer.play().catch(() => {}));
+                state.hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal) { if (data.type === Hls.ErrorTypes.NETWORK_ERROR) state.hls.startLoad(); else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) state.hls.recoverMediaError(); else state.hls.destroy(); } });
+            } else if (elements.videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                elements.videoPlayer.src = channel.url;
+                elements.videoPlayer.addEventListener('loadedmetadata', () => elements.videoPlayer.play().catch(() => {}));
+            }
+            if (state.isMobile) setTimeout(() => scrollToSection('iptv-section'), 200);
+        }
+
+        // Matches functions (similar updates for render)
+        async function loadMatches(date) {
+            try {
+                elements.matchesContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <div class="w-12 h-12 border-4 border-primary/20 dark:border-primary/20 rounded-full border-t-primary mx-auto mb-6 animate-spin-slow"></div>
+                        <p class="text-gray-500 dark:text-gray-400 text-lg">جاري تحميل المباريات...</p>
+                    </div>
+                `;
+                const res = await fetch(`https://${CONFIG.API_HOST}/fixtures?date=${date}&timezone=Asia/Riyadh`, {
+                    headers: { 'x-rapidapi-host': CONFIG.API_HOST, 'x-rapidapi-key': CONFIG.API_KEY }
+                });
+                const data = await res.json();
+                state.matches = data.response || [];
+                updateLeagueFilter();
+                filterMatches();
+            } catch (e) {
+                console.error(e);
+                elements.matchesContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <i class="ph ph-warning-circle text-6xl text-red-400 mb-6"></i>
+                        <p class="text-red-400 text-xl font-semibold">فشل تحميل المباريات</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">تحقق من اتصال الإنترنت</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateLeagueFilter() {
+            const leagues = new Map();
+            state.matches.forEach(m => { if (m.league?.name) leagues.set(m.league.id, m.league.name); });
+            elements.leagueFilter.innerHTML = '<option value="all">جميع البطولات</option>' + Array.from(leagues).map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
+        }
+
+        function filterMatches() {
+            let filtered = state.matches;
+            if (state.currentLeague !== 'all') filtered = filtered.filter(m => m.league?.id == state.currentLeague);
+            if (state.showLiveOnly) filtered = filtered.filter(m => ['1H','HT','2H','ET'].includes(m.fixture?.status?.short));
+            state.filteredMatches = filtered;
+            renderMatches();
+        }
+
+        function renderMatches() {
+            const toShow = state.filteredMatches.slice(0, state.displayedMatches);
+            if (!toShow.length) {
+                elements.matchesContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <i class="ph ph-calendar-blank text-6xl text-gray-400 mb-6"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-xl font-semibold">لا توجد مباريات</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">جرب تاريخاً مختلفاً</p>
+                    </div>
+                `;
+                elements.loadMoreMatchesBtn.style.display = 'none'; return;
+            }
+            elements.matchesContainer.innerHTML = toShow.map(match => {
+                const isLive = ['1H','HT','2H','ET'].includes(match.fixture.status.short), isFinished = match.fixture.status.short === 'FT';
+                const time = new Date(match.fixture.date).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <article class="match-card bg-gradient-to-br from-white dark:from-dark-100 to-gray-50 dark:to-dark-200 border border-gray-200/50 dark:border-white/10 rounded-3xl p-6 shadow-xl hover:shadow-glow-lg hover:-translate-y-2 active:translate-y-0 transition-all duration-500 overflow-hidden group/card">
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="flex items-center gap-2">
+                                ${isLive ? `<span class="live-indicator bg-gradient-to-r from-primary to-primary-600 animate-pulse-slow inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-black text-white shadow-lg">مباشر</span>` :
+                                    isFinished ? `<span class="px-3 py-1.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-500 border border-emerald-500/30">انتهت</span>` :
+                                    `<span class="px-3 py-1.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-500 border border-blue-500/30">${time}</span>`}
+                                ${match.fixture.status.elapsed ? `<span class="ml-2 text-xs font-black bg-gray-800 dark:bg-white/10 text-white px-2.5 py-1 rounded-full">${match.fixture.status.elapsed}'</span>` : ''}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 font-medium truncate max-w-[140px] text-right" title="${match.league.name}">${match.league.name}</div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-stretch justify-between gap-4">
+                                <div class="flex items-center gap-3 flex-1">
+                                    <div class="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                                        ${match.teams.home.logo ? `<img src="${match.teams.home.logo}" alt="${match.teams.home.name}" class="w-8 h-8 object-contain rounded-xl shadow-md" loading="lazy">` : `<div class="w-8 h-8 rounded-xl bg-gray-300 dark:bg-gray-700"></div>`}
+                                    </div>
+                                    <span class="text-base font-black truncate" title="${match.teams.home.name}">${match.teams.home.name}</span>
+                                </div>
+                                <div class="flex items-center px-4 py-2 bg-white/50 dark:bg-black/20 rounded-2xl shadow-lg">
+                                    <div class="text-2xl font-black text-gray-900 dark:text-white">${match.goals.home ?? '—'} - ${match.goals.away ?? '—'}</div>
+                                </div>
+                                <div class="flex items-center gap-3 flex-1 justify-end">
+                                    <span class="text-base font-black truncate text-left" title="${match.teams.away.name}">${match.teams.away.name}</span>
+                                    <div class="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                                        ${match.teams.away.logo ? `<img src="${match.teams.away.logo}" alt="${match.teams.away.name}" class="w-8 h-8 object-contain rounded-xl shadow-md" loading="lazy">` : `<div class="w-8 h-8 rounded-xl bg-gray-300 dark:bg-gray-700"></div>`}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400 text-center pt-2 border-t border-gray-200/50 dark:border-white/10">${match.fixture.venue?.name || 'ملعب غير محدد'}</div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            elements.loadMoreMatchesBtn.style.display = state.displayedMatches < state.filteredMatches.length ? 'block' : 'none';
+        }
+
+        function changeDate(days) {
+            const date = new Date(state.currentDate); date.setDate(date.getDate() + days);
+            state.currentDate = date.toISOString().split('T')[0]; elements.datePicker.value = state.currentDate;
+            loadMatches(state.currentDate);
+        }
+
+        function toggleLiveMatches() {
+            state.showLiveOnly = !state.showLiveOnly;
+            if (state.showLiveOnly) {
+                elements.liveMatchesBtn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/25');
+                elements.liveMatchesBtn.classList.remove('bg-gray-100', 'dark:bg-dark-200');
+            } else {
+                elements.liveMatchesBtn.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/25');
+                elements.liveMatchesBtn.classList.add('bg-gray-100', 'dark:bg-dark-200');
+            }
+            filterMatches();
+        }
+
+        function loadMoreMatches() {
+            state.displayedMatches += 8; renderMatches();
+            if (state.isMobile) elements.loadMoreMatchesBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Notifications
+        function showNotification(msg, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm p-5 rounded-2xl shadow-2xl z-[100] translate-y-4 transition-all duration-300 ${
+                type === 'success' ? 'bg-emerald-500 text-white animate-slide-down' :
+                type === 'error' ? 'bg-red-500 text-white animate-slide-down' :
+                'bg-gray-800 dark:bg-gray-900 text-white animate-slide-down'
+            }`;
+            notif.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">${msg}</span>
+                    <button class="ml-3 p-1 rounded-full hover:bg-white/20 transition-colors" onclick="this.parentElement.parentElement.remove()">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 4000);
+        }
+
+        // Online/offline
+        window.addEventListener('online', () => showNotification('تم استعادة الاتصال بالإنترنت', 'success'));
+        window.addEventListener('offline', () => showNotification('فقد الاتصال بالإنترنت', 'error'));
+
+        // Prevent zoom/pull-refresh
+        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
+    </script>
+</body>
+</html>
